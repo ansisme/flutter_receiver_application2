@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+// ignore: library_prefixes
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class LocationMap extends StatefulWidget {
@@ -15,7 +16,7 @@ class LocationMap extends StatefulWidget {
 class _LocationMapState extends State<LocationMap> {
   late IO.Socket socket;
   late Map<MarkerId, Marker> _markers;
-  Completer<GoogleMapController> _controller = Completer();
+  final Completer<GoogleMapController> _controller = Completer();
 
   static const CameraPosition _cameraPosition = CameraPosition(
       target: LatLng(37.42796133580664, -122.085749655962), zoom: 15);
@@ -29,7 +30,7 @@ class _LocationMapState extends State<LocationMap> {
 
   Future<void> initSocket() async {
     try {
-      socket = IO.io("http://127.0.0.1:3700/", <String, dynamic>{
+      socket = IO.io("http://10.12.23.127:3700/", <String, dynamic>{
         'transports': ['websocket'],
         'autoConnect': true,
       });
@@ -37,7 +38,7 @@ class _LocationMapState extends State<LocationMap> {
       socket.on("position-change", (data) async {
         var latLng = jsonDecode(data);
         final GoogleMapController controller = await _controller.future;
-        controller.animateCamera(
+        await controller.animateCamera(
           CameraUpdate.newCameraPosition(
             CameraPosition(
               target: LatLng(latLng['lat'], latLng['lng']),
@@ -45,18 +46,20 @@ class _LocationMapState extends State<LocationMap> {
             ),
           ),
         );
-        var image = await BitmapDescriptor.fromAssetImage(
-          ImageConfiguration(),
-          "assets/marker.png",
-        );
 
+        var image = await BitmapDescriptor.fromAssetImage(
+          const ImageConfiguration(),
+          "assets/mark-re.png",
+        );
+        print("Hello______________________________");
         Marker marker = Marker(
-            markerId: MarkerId("ID"),
+            markerId: const MarkerId("ID"),
             icon: image,
             position: LatLng(latLng['lat'], latLng['lng']));
         setState(() {
-          _markers[MarkerId("ID")] = marker;
+          _markers[const MarkerId("ID")] = marker;
         });
+        print("Done_____________________________");
       });
     } catch (e) {}
   }
